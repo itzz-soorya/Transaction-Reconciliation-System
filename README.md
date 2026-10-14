@@ -99,6 +99,21 @@ Install dependencies:
 npm install
 ```
 
+#### Windows native build requirement
+
+The backend uses `better-sqlite3`, which contains native code. On Windows,
+`npm install` may compile it locally when a prebuilt binary is not available
+for the installed Node.js version. If npm reports that `node-gyp` cannot find a
+Windows SDK, open **Visual Studio Installer**, select **Modify** for Visual
+Studio 2022, and install:
+
+- **Desktop development with C++**
+- A Windows 10 or Windows 11 SDK component
+
+Then open a new terminal and run `npm install` again. Node.js 22 or newer is
+required by the current `better-sqlite3` dependency; the current Node.js LTS
+release is recommended.
+
 ## Running the Application
 
 Start the development server:
