@@ -14,8 +14,8 @@ The application is being developed as part of the OpenFabric Software Engineer a
 - **Database:** SQLite
 - **CSV Processing:** csv-parse
 - **Validation:** Zod
-- **Testing:** Jest and Supertest (planned)
-- **Frontend:** React with TypeScript (planned)
+- **Testing:** TypeScript, ESLint, and build validation
+- **Frontend:** React with TypeScript and Vite
 
 ## Key Features
 
@@ -61,20 +61,15 @@ For example, a transaction with a debit of $100 and a credit of $20 has a net se
 ```text
 openfabric-reconciliation/
 ├── src/
-│   ├── config/
 │   ├── database/
 │   ├── routes/
-│   ├── controllers/
 │   ├── services/
-│   ├── tests/
 │   └── server.ts
-├── tests/
+├── Frontend/client/
+│   └── src/
 ├── data/
-├── docs/
-├── .env.example
-├── .gitignore
+├── project.md
 ├── package.json
-├── package-lock.json
 ├── tsconfig.json
 └── README.md
 ```
@@ -127,7 +122,7 @@ Expected response:
 ```json
 {
   "success": true,
-  "message": "Transaction Reconciliation API is running"
+  "database": "connected"
 }
 ```
 
@@ -136,12 +131,14 @@ Expected response:
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/health` | Check server availability |
-| POST | `/reconcile` | Upload and process a settlement report |
-| GET | `/transactions` | Retrieve transactions with optional filters |
-| GET | `/transactions/:id` | Retrieve transaction details and settlement history |
-| GET | `/dashboard/summary` | Retrieve reconciliation statistics |
+| GET | `/api/reconciliation` | Run reconciliation and return per-transaction results |
+| GET | `/api/transactions` | Retrieve transactions |
+| GET | `/api/transactions/:id` | Retrieve one transaction |
+| GET | `/api/transactions/:id/settlements` | Retrieve settlement history |
+| GET | `/api/dashboard/summary` | Retrieve reconciliation statistics |
 
-The reconciliation endpoints will be implemented as development progresses.
+Settlement CSVs are currently imported with the command-line
+`npm run import:settlements` script.
 
 ## Database Design
 
@@ -193,10 +190,15 @@ Run the available TypeScript validation:
 npm run typecheck
 ```
 
-Run the available test suite once configured:
+No automated test suite is configured yet. The frontend and backend can be
+validated with:
 
 ```bash
-npm test
+npm run typecheck
+npm run build
+cd Frontend/client
+npm run lint
+npm run build
 ```
 
 ## Assumptions and Limitations
@@ -205,7 +207,8 @@ npm test
 - Lifecycle ID is the primary matching key.
 - Account ID, merchant name, and transaction date are used as fallback matching criteria when appropriate.
 - Refund scenarios follow the expected outcomes clarified for the assignment.
-- Reconciliation and dashboard features are being implemented incrementally.
+- The reconciliation workflow and initial dashboard are implemented; see
+  `project.md` for the current implementation status and limitations.
 - Production-grade authentication, authorization, deployment, and monitoring are outside the initial development scope unless subsequently required.
 
 ## Future Improvements
@@ -216,4 +219,3 @@ npm test
 - Improved audit logging
 - More extensive automated test coverage
 - Production deployment and monitoring
-

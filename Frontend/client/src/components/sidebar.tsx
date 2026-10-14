@@ -1,4 +1,18 @@
-const menuItems = [
+
+export type PageName =
+  | "Dashboard"
+  | "Transactions"
+  | "Reconciliation"
+  | "Issues"
+  | "Reports"
+  | "Settings";
+
+interface SidebarProps {
+  currentPage: PageName;
+  onNavigate: (page: PageName) => void;
+}
+
+const menuItems: { icon: string; label: PageName }[] = [
   { icon: "", label: "Dashboard" },
   { icon: "", label: "Transactions" },
   { icon: "", label: "Reconciliation" },
@@ -6,35 +20,39 @@ const menuItems = [
   { icon: "", label: "Reports" },
 ];
 
-function Sidebar() {
+function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   return (
     <aside className="sidebar">
-      {/* <div className="sidebar-heading">WORKSPACE</div> */}
+      
 
       <nav className="sidebar-nav">
-        {menuItems.map((item, index) => (
-          <a
-            href="#"
+        {menuItems.map((item) => (
+          <button
+            type="button"
             key={item.label}
-            className={`sidebar-link ${index === 0 ? "active" : ""}`}
-            onClick={(event) => event.preventDefault()}
+            className={`sidebar-link ${
+              currentPage === item.label ? "active" : ""
+            }`}
+            onClick={() => onNavigate(item.label)}
           >
             <span className="sidebar-icon">{item.icon}</span>
             <span>{item.label}</span>
-          </a>
+          </button>
         ))}
       </nav>
 
       <div className="sidebar-bottom">
         <div className="sidebar-heading">SYSTEM</div>
-        <a
-          href="#"
-          className="sidebar-link"
-          onClick={(event) => event.preventDefault()}
+        <button
+          type="button"
+          className={`sidebar-link ${
+            currentPage === "Settings" ? "active" : ""
+          }`}
+          onClick={() => onNavigate("Settings")}
         >
           <span className="sidebar-icon">⚙</span>
           <span>Settings</span>
-        </a>
+        </button>
       </div>
     </aside>
   );

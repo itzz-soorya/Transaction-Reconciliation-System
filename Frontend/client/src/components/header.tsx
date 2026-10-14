@@ -11,10 +11,10 @@ function Header() {
           🔔
         </button> */}
 
-        <div className="profile">
+        {/* <div className="profile">
           <div className="profile-avatar">S</div>
-          <span>Admin</span>
-        </div>
+          <span>Admin</span> */}
+        {/* </div> */}
       </div>
     </header>
   );
