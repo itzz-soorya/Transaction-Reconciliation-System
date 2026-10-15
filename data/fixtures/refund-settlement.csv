@@ -1,0 +1,3 @@
+settlement_id,lifecycle_id,account_id,merchant_name,transaction_date,settlement_date,settlement_amount,settlement_type,currency
+FIX-REFUND-001,LC004,ACC126,Best Buy,2025-08-14,2025-08-15,899.99,DEBIT,USD
+FIX-REFUND-002,LC004,ACC126,Best Buy,2025-08-14,2025-08-16,20.00,CREDIT,USD
