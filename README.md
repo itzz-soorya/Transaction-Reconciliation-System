@@ -1,33 +1,37 @@
 # Transaction Reconciliation System
 
-A backend-driven transaction reconciliation system that matches transaction records with settlement reports, calculates net settlement amounts, identifies reconciliation issues, and provides summary data for a dashboard.
+A backend-driven transaction reconciliation system that matches financial transactions with settlement reports, calculates net settlement amounts, identifies discrepancies, and provides summary data for a dashboard.
+
+Developed as part of the OpenFabric Software Engineer assignment.
 
 ## Project Overview
 
-Financial transactions may be settled through multiple payments, partial settlements, or refunds. This system reconciles transaction records against settlement CSV files to determine settlement status and highlight discrepancies.
+Financial transactions can be settled through multiple payments, partial settlements, or refunds. This application imports settlement CSV files, matches settlement records with transactions, calculates net settled amounts, and identifies reconciliation issues.
 
-The application is being developed as part of the OpenFabric Software Engineer assignment.
+The application includes a React frontend, a TypeScript/Express backend, and an SQLite database.
 
 ## Tech Stack
 
 - **Backend:** Node.js, TypeScript, Express.js
-- **Database:** SQLite
-- **CSV Processing:** csv-parse
+- **Database:** SQLite with `better-sqlite3`
+- **CSV Processing:** `csv-parse`
 - **Validation:** Zod
-- **Testing:** TypeScript, ESLint, and build validation
-- **Frontend:** React with TypeScript and Vite
+- **Frontend:** React, TypeScript, Vite
+- **Testing:** Node.js test runner with `tsx`
+- **Build and Type Checking:** TypeScript compiler
 
 ## Key Features
 
 - Import and validate settlement CSV files.
-- Match settlements with transactions using lifecycle IDs.
-- Use account ID, merchant name, and transaction date as fallback matching criteria.
-- Support multiple settlements for a transaction.
-- Calculate net settlement amounts by accounting for debits and credits.
-- Identify pending, partially settled, fully settled, over-settled, and refunded transactions.
-- Detect settlement discrepancies and delayed settlements.
-- Provide transaction details and settlement history.
-- Generate reconciliation summaries for a dashboard.
+- Match settlements using lifecycle IDs.
+- Fall back to account ID, merchant name, and transaction date when appropriate.
+- Support multiple settlement records for a transaction.
+- Calculate net settlement amounts using debit and credit records.
+- Identify pending, partially settled, fully settled, over-settled, refunded, and not-applicable transactions.
+- Detect over-settlement, overdue settlement, and partial settlement issues.
+- Display transaction details and settlement history.
+- Provide dashboard metrics, issue summaries, and reports.
+- Detect duplicate settlement IDs and report unmatched or invalid CSV rows.
 
 ## Reconciliation Rules
 
@@ -35,54 +39,60 @@ The application is being developed as part of the OpenFabric Software Engineer a
 
 | Status | Description |
 |---|---|
-| `PENDING` | No settlements recorded |
-| `PARTIAL` | Net settlement is less than the transaction amount without a refund |
-| `FULLY_SETTLED` | Net settlement equals the transaction amount |
-| `OVER_SETTLED` | Net settlement exceeds the transaction amount |
-| `REFUNDED` | A refund or partial refund has been recorded, according to the assignment scenarios |
+| `PENDING` | No settlement records are available for the transaction. |
+| `PARTIAL` | Net settlement is below the transaction amount without a refund. |
+| `FULLY_SETTLED` | Net settlement equals the transaction amount. |
+| `OVER_SETTLED` | Net settlement exceeds the transaction amount. |
+| `REFUNDED` | A refund or partial refund has been recorded, according to the assignment scenarios. |
+| `NOT_APPLICABLE` | The transaction status does not require normal settlement reconciliation. |
 
 ### Net Settlement Calculation
 
-Net settlement amount is calculated as:
+Net settlement is calculated as:
 
 `Net Settlement = Total DEBIT Amount - Total CREDIT Amount`
 
-For example, a transaction with a debit of $100 and a credit of $20 has a net settlement amount of $80. Under the assignment's clarified refund scenarios, the status is `REFUNDED` and the issue flag is `No issues`.
+For example, a $100 debit and a $20 credit produce a net settlement amount of $80.
+
+For the refund scenarios clarified in the assignment, the expected status is `REFUNDED`, with no issues.
 
 ### Issue Detection
 
-- **Critical issue:** Settlement amount exceeds the transaction amount.
-- **Critical issue:** No settlement is recorded within seven days of the transaction date.
-- **Warning:** A transaction remains partially settled without a refund.
-- **No issues:** The transaction matches an expected scenario without a critical issue or warning.
+- **Critical:** Settlement amount exceeds the transaction amount.
+- **Critical:** No settlement is received within seven days of the transaction date.
+- **Critical:** A settlement exists for an inactive transaction, such as a failed transaction.
+- **Warning:** A completed transaction remains partially settled without a refund.
+- **No issues:** The transaction satisfies the applicable reconciliation rules.
 
 ## Project Structure
 
+The main project areas include:
+
 ```text
-openfabric-reconciliation/
+Transaction-Reconciliation-System/
 ├── src/
 │   ├── database/
 │   ├── routes/
 │   ├── services/
 │   └── server.ts
-├── Frontend/client/
-│   └── src/
+├── Frontend/
+│   └── client/
+│       └── src/
 ├── data/
-├── project.md
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
 
-The folder structure may evolve as the implementation progresses.
+The actual repository may contain additional files and subdirectories.
 
 ## Prerequisites
 
-Install the following before running the project:
-
-- Node.js (LTS version recommended)
+- Node.js compatible with the project's dependencies
 - npm
 - Visual Studio Code or another code editor
+
+The SQLite native dependency may require Windows C++ build tools if a compatible prebuilt binary is unavailable.
 
 ## Installation
 
@@ -90,147 +100,140 @@ Clone the repository:
 
 ```bash
 git clone <your-repository-url>
-cd openfabric-reconciliation
+cd Transaction-Reconciliation-System
 ```
 
-Install dependencies:
+Install backend dependencies:
 
 ```bash
 npm install
 ```
 
-#### Windows native build requirement
+Install frontend dependencies:
 
-The backend uses `better-sqlite3`, which contains native code. On Windows,
-`npm install` may compile it locally when a prebuilt binary is not available
-for the installed Node.js version. If npm reports that `node-gyp` cannot find a
-Windows SDK, open **Visual Studio Installer**, select **Modify** for Visual
-Studio 2022, and install:
+```bash
+cd Frontend/client
+npm install
+```
 
-- **Desktop development with C++**
-- A Windows 10 or Windows 11 SDK component
-
-Then open a new terminal and run `npm install` again. Node.js 22 or newer is
-required by the current `better-sqlite3` dependency; the current Node.js LTS
-release is recommended.
+Return to the project root before running backend commands.
 
 ## Running the Application
 
-Start the development server:
+### 1. Start the Backend
+
+From the project root:
 
 ```bash
 npm run dev
 ```
 
-The default server address is:
+The backend runs at:
 
 `http://localhost:3000`
 
-### Health Check
+### 2. Start the Frontend
 
-Send a GET request to:
+Open a second terminal:
 
-`GET /health`
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "database": "connected"
-}
+```bash
+cd Frontend/client
+npm run dev
 ```
+
+Open the local URL printed by Vite in the terminal, typically:
+
+`http://localhost:5173`
+
+Keep both development servers running while using the application.
 
 ## API Endpoints
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/health` | Check server availability |
-| GET | `/api/reconciliation` | Run reconciliation and return per-transaction results |
-| GET | `/api/transactions` | Retrieve transactions |
-| GET | `/api/transactions/:id` | Retrieve one transaction |
-| GET | `/api/transactions/:id/settlements` | Retrieve settlement history |
-| GET | `/api/dashboard/summary` | Retrieve reconciliation statistics |
+| `GET` | `/health` | Check server availability and database connection |
+| `POST` | `/api/reconcile` | Upload and process a settlement CSV |
+| `GET` | `/api/reconciliation` | Retrieve reconciliation results |
+| `GET` | `/api/transactions` | Retrieve transactions |
+| `GET` | `/api/transactions/:id` | Retrieve transaction details |
+| `GET` | `/api/dashboard/summary` | Retrieve dashboard statistics |
 
-Settlement CSVs are currently imported with the command-line
-`npm run import:settlements` script.
+Confirm the available transaction settlement-history route against the current backend implementation before documenting it.
 
-## Database Design
+## Database
 
 The application uses SQLite with two primary tables.
 
 ### `transactions`
 
-Stores transaction information, including:
-
-- Transaction and lifecycle identifiers
-- Account and merchant details
-- Transaction date and amount
-- Currency and transaction status
-- Settlement status and total settled amount
-- Last settlement date and creation timestamp
+Stores transaction identifiers, account and merchant details, transaction dates and amounts, currency, transaction status, settlement status, total settled amount, and the latest settlement date.
 
 ### `settlement_history`
 
-Stores individual settlement records, including:
+Stores settlement IDs, transaction references, lifecycle IDs, settlement dates and amounts, settlement types, and currencies.
 
-- Settlement and transaction identifiers
-- Lifecycle identifier
-- Settlement date and amount
-- Settlement type (`DEBIT` or `CREDIT`)
-- Currency and processing timestamp
+The database schema is maintained in the project's database files.
 
-The database schema and initialization scripts will be maintained in the project repository.
+If a seed script is provided, it can be run from the project root using the command documented in the source code. Seed scripts may insert sample records without clearing existing data; verify their behavior before using them to reset a database.
 
 ## CSV Validation
 
-The reconciliation process will validate:
+The CSV import process checks settlement data and matching information, including:
 
-- Required column names and values
-- Date and numeric formats
+- Required columns and values
+- Numeric settlement amounts
+- Settlement dates and transaction dates
 - Positive settlement amounts
+- Supported settlement types (`DEBIT` and `CREDIT`)
 - Currency consistency
-- Missing or malformed records
+- Duplicate settlement IDs
 - Transaction matching and unmatched settlements
 
-Invalid records should be handled safely and reported clearly.
+Invalid and unmatched records are reported in the import results.
 
-## Testing
+## Testing and Validation
 
-The project will include unit tests for reconciliation calculations and status determination, along with integration tests for REST API endpoints.
+Run the automated backend tests:
 
-Run the available TypeScript validation:
+```bash
+npm test
+```
+
+Run TypeScript type checking:
 
 ```bash
 npm run typecheck
 ```
 
-No automated test suite is configured yet. The frontend and backend can be
-validated with:
+Build the backend:
 
 ```bash
-npm run typecheck
 npm run build
+```
+
+Build the frontend:
+
+```bash
 cd Frontend/client
-npm run lint
 npm run build
 ```
+
+The automated test suite currently covers seven scenarios, including exact settlement, partial settlement, over-settlement, overdue and recent pending transactions, and the two clarified refund scenarios.
+
+Manual integration tests have also been performed for CSV imports, duplicate detection, fallback matching, invalid data, unmatched settlements, currency mismatch, and multiple-settlement status transitions.
 
 ## Assumptions and Limitations
 
-- Transaction and settlement data must contain sufficient information for matching.
 - Lifecycle ID is the primary matching key.
-- Account ID, merchant name, and transaction date are used as fallback matching criteria when appropriate.
-- Refund scenarios follow the expected outcomes clarified for the assignment.
-- The reconciliation workflow and initial dashboard are implemented; see
-  `project.md` for the current implementation status and limitations.
-- Production-grade authentication, authorization, deployment, and monitoring are outside the initial development scope unless subsequently required.
+- Account ID, merchant name, and transaction date provide fallback matching when appropriate.
+- Refund behavior follows the clarified assignment scenarios.
+- The seven-day grace period is used for overdue settlement detection.
+- Authentication, authorization, deployment, and production monitoring are outside the current scope unless required by the assignment.
 
 ## Future Improvements
 
-- Interactive reconciliation dashboard
-- Detailed transaction timeline
 - Downloadable reconciliation reports
-- Improved audit logging
-- More extensive automated test coverage
+- Enhanced audit logging
+- Additional automated API integration tests
 - Production deployment and monitoring
+- More detailed reporting and reconciliation history

@@ -8,6 +8,7 @@ import Transactions from "./components/Transactions";
 import Reconciliation from "./components/Reconciliation";
 import Issues from "./components/Issues";
 import Reports from "./components/Reports";
+import Settings from "./components/Settings";
 import "./App.css";
 
 function App() {
@@ -34,11 +35,14 @@ function App() {
 
         {currentPage === "Reports" && <Reports />}
 
+        {currentPage === "Settings" && <Settings />}
+
         {currentPage !== "Dashboard" &&
           currentPage !== "Transactions" &&
           currentPage !== "Reconciliation" &&
           currentPage !== "Issues" &&
-          currentPage !== "Reports" && (
+          currentPage !== "Reports" &&
+          currentPage !== "Settings" && (
             <main className="main-content">
               <h1>{currentPage}</h1>
               <p>This section will be implemented next.</p>
