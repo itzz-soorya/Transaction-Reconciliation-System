@@ -5,6 +5,9 @@ import Sidebar from "./components/sidebar";
 import type { PageName } from "./components/sidebar";
 import Dashboard from "./components/Dashboard";
 import Transactions from "./components/Transactions";
+import Reconciliation from "./components/Reconciliation";
+import Issues from "./components/Issues";
+import Reports from "./components/Reports";
 import "./App.css";
 
 function App() {
@@ -25,8 +28,17 @@ function App() {
 
         {currentPage === "Transactions" && <Transactions />}
 
+        {currentPage === "Reconciliation" && <Reconciliation />}
+
+        {currentPage === "Issues" && <Issues />}
+
+        {currentPage === "Reports" && <Reports />}
+
         {currentPage !== "Dashboard" &&
-          currentPage !== "Transactions" && (
+          currentPage !== "Transactions" &&
+          currentPage !== "Reconciliation" &&
+          currentPage !== "Issues" &&
+          currentPage !== "Reports" && (
             <main className="main-content">
               <h1>{currentPage}</h1>
               <p>This section will be implemented next.</p>
