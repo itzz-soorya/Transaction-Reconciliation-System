@@ -5,12 +5,17 @@ import { reconcileTransactions } from "./services/reconciliation.service.js";
 import { getDashboardSummary } from "./services/dashboard.service.js";
 import transactionRoutes from "./routes/transactions.routes.js";
 import reconciliationRoutes from "./routes/reconciliation.routes.js";
+import requestLogging from "./middleware/request-logging.js";
+import { apiRateLimiter } from "./middleware/rate-limiter.js";
+import errorHandler from "./middleware/error-handler.js";
 
-const app = express();
+export const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 app.use(express.json());
+app.use(requestLogging);
 
+app.use("/api", apiRateLimiter);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api", reconciliationRoutes);
 
@@ -49,6 +54,8 @@ app.get("/api/dashboard/summary", (_req, res, next) => {
     next(error);
   }
 });
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

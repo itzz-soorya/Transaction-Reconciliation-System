@@ -42,7 +42,7 @@ function Sidebar({ currentPage, onNavigate }: SidebarProps) {
       </nav>
 
       <div className="sidebar-bottom">
-        <div className="sidebar-heading">SYSTEM</div>
+        
         <button
           type="button"
           className={`sidebar-link ${

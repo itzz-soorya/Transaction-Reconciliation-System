@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { importSettlementCsv } from "../services/settlement-import.service.js";
 import { reconcileTransactions } from "../services/reconciliation.service.js";
+import { uploadRateLimiter } from "../middleware/rate-limiter.js";
 
 const router = Router();
 
@@ -23,6 +24,7 @@ const upload = multer({
 
 router.post(
   "/reconcile",
+  uploadRateLimiter,
   upload.single("file"),
   (req, res, next) => {
     try {

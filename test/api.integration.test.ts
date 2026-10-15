@@ -114,7 +114,12 @@ test("API endpoints support isolated reconciliation and validation flows", async
   const port = await getFreePort();
   const child = spawn(process.execPath, [tsxCli, path.join(repositoryRoot, "src", "server.ts")], {
     cwd: temporaryDirectory,
-    env: { ...process.env, PORT: String(port) },
+    env: {
+      ...process.env,
+      PORT: String(port),
+      UPLOAD_RATE_LIMIT_MAX: "3",
+      LOG_DIR: path.join(temporaryDirectory, "test-logs"),
+    },
     stdio: "ignore",
   });
   const baseUrl = `http://127.0.0.1:${port}`;
@@ -151,6 +156,10 @@ test("API endpoints support isolated reconciliation and validation flows", async
     assert.deepEqual(importBody.import?.duplicates, ["API-DUP"]);
     assert.deepEqual(importBody.import?.unmatched, ["API-UNMATCHED: No matching transaction"]);
     assert.deepEqual(importBody.import?.invalid, ["API-CURRENCY: Currency does not match transaction"]);
+
+    const rateLimitedUpload = await postCsv(baseUrl, csv);
+    assert.equal(rateLimitedUpload.status, 429);
+    assert.equal((await rateLimitedUpload.json()).success, false);
 
     const reconciliation = await fetch(`${baseUrl}/api/reconciliation`);
     assert.equal(reconciliation.status, 200);

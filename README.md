@@ -10,6 +10,8 @@ surfaces reconciliation issues through a React dashboard.
 - Database: SQLite through `better-sqlite3`
 - CSV parsing: `csv-parse`
 - Uploads: `multer`
+- Logging: application request and event logs written to daily files
+- Protection: Express API rate limiting
 - Frontend: React, TypeScript, Vite
 - Tests: Node's built-in test runner through `tsx`
 
@@ -74,6 +76,51 @@ npm run dev
 
 The backend listens on `http://localhost:3000`. `PORT` may be set in the shell
 before starting it; no `.env` file is required by the current implementation.
+
+### Logging
+
+The backend writes application logs to `logs/`, which is ignored by Git. A
+separate file is created for each calendar day using the configured timezone:
+`15Oct2026logfile.txt`. The default timezone is UTC; set `LOG_TIMEZONE` to an
+IANA timezone such as `Asia/Kolkata` when local calendar days are preferred.
+`LOG_DIR` can override the log directory, which is useful for isolated tests or
+service-managed storage.
+
+Each line includes a timestamp, severity, event name, and structured metadata:
+
+```text
+2026-10-15 11:45:03 [INFO] reconciliation.completed {"event":"reconciliation.completed","transactionsProcessed":14}
+```
+
+Available levels are `DEBUG`, `INFO`, `WARN`, and `ERROR`. Inspect the current
+file with a text viewer or `Get-Content logs\<date>logfile.txt -Wait` on
+Windows. Request logs intentionally omit query strings, request bodies,
+authorization headers, and uploaded file contents.
+
+### API rate limiting
+
+Requests under `/api` use an in-memory limit of 100 requests per IP per 15
+minutes by default. `POST /api/reconcile` has a stricter limit of 10 uploads
+per IP per 15 minutes, applied before the CSV is parsed or processed. Health
+checks at `/health` are not counted. Exceeded limits return HTTP 429 with:
+
+```json
+{
+  "success": false,
+  "message": "Too many requests. Please try again later."
+}
+```
+
+Configure `RATE_LIMIT_WINDOW_MS`, `RATE_LIMIT_MAX`, and
+`UPLOAD_RATE_LIMIT_MAX` with positive integer values. Standard
+`RateLimit-*` response headers are enabled. The default in-memory store is
+appropriate for a single backend process; use a shared store for coordinated
+limits across multiple instances.
+
+When deploying behind a reverse proxy, configure Express `trust proxy` for the
+specific proxy addresses or hops in the application deployment. Do not blindly
+trust arbitrary forwarded IP headers, because rate limits are keyed by the
+client IP reported by Express.
 
 Start the frontend in a second terminal:
 

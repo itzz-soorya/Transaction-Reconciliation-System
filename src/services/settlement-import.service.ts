@@ -1,5 +1,6 @@
 import db from "../database/connection.js";
 import { parse } from "csv-parse/sync";
+import logger from "../utils/logger.js";
 
 interface SettlementRow {
   settlement_id: string;
@@ -47,6 +48,11 @@ function isValidDate(value: string): boolean {
 }
 
 export function importSettlementCsv(csvContent: string): ImportResult {
+  logger.info("settlement.import.started", {
+    event: "settlement.import.started",
+    inputBytes: Buffer.byteLength(csvContent, "utf8"),
+  });
+
   if (!csvContent.trim()) {
     throw new Error("The uploaded CSV file is empty.");
   }
@@ -255,6 +261,15 @@ export function importSettlementCsv(csvContent: string): ImportResult {
   });
 
   importRows();
+
+  logger.info("settlement.import.completed", {
+    event: "settlement.import.completed",
+    totalRows: result.totalRows,
+    imported: result.imported,
+    invalid: result.invalid.length,
+    duplicates: result.duplicates.length,
+    unmatched: result.unmatched.length,
+  });
 
   return result;
 }

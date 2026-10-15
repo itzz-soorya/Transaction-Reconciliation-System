@@ -1,5 +1,6 @@
 
 import db from "../database/connection.js";
+import logger from "../utils/logger.js";
 
 interface TransactionRow {
   transaction_id: string;
@@ -202,6 +203,9 @@ function detectIssues(
 }
 
 export function reconcileTransactions(): ReconciliationResult[] {
+  logger.info("reconciliation.started", {
+    event: "reconciliation.started",
+  });
   const transactions = getTransactions.all() as TransactionRow[];
 
   const reconcileAll = db.transaction(() => {
@@ -237,5 +241,17 @@ export function reconcileTransactions(): ReconciliationResult[] {
     return results;
   });
 
-  return reconcileAll();
+  try {
+    const results = reconcileAll();
+    logger.info("reconciliation.completed", {
+      event: "reconciliation.completed",
+      transactionsProcessed: results.length,
+    });
+    return results;
+  } catch (error) {
+    logger.error("reconciliation.failed", error, {
+      event: "reconciliation.failed",
+    });
+    throw error;
+  }
 }
