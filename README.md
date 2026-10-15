@@ -1,4 +1,4 @@
-# OpenFabric Transaction Reconciliation System
+# Transaction Reconciliation System
 
 A backend-driven transaction reconciliation application that imports settlement
 reports, matches settlements to transactions, calculates net settlement, and
