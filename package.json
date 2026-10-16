@@ -7,7 +7,8 @@
     "dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "test": "tsx --test"
+    "test": "tsx --test",
+    "demo:reset": "tsx src/database/setup-assignment-demo.ts"
   },
   "keywords": [],
   "author": "",

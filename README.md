@@ -42,14 +42,42 @@ installations.
 The backend opens `reconciliation.db` in the current working directory and
 initializes the tables from `src/database/schema.sql`.
 
-To create the assignment transaction rows without deleting existing data:
+To add missing assignment transaction rows without deleting existing data:
 
 ```bash
 npx tsx src/database/seed-transactions.ts
 ```
 
 The seed uses `INSERT OR IGNORE` by transaction ID. It is safe to rerun and does
-not clear transactions or settlement history.
+not replace custom rows or clear transactions and settlement history.
+
+### Explicit assignment demo reset
+
+The live repository database may contain custom test data. To prepare it for the
+assignment demo, stop the backend and run this separate, destructive setup
+command from the repository root:
+
+```bash
+npm run demo:reset
+```
+
+This command creates and verifies a timestamped SQLite backup under `backups/`
+before it clears **all** rows from `settlement_history` and `transactions`.
+It then restores the 14 assignment transaction rows and verifies the counts. It
+does not import the CSV and is never run by application startup. The backup
+directory is ignored by Git.
+
+After the reset, import the assignment report and reconcile explicitly:
+
+```bash
+npx tsx src/database/import-settlements.ts
+npx tsx src/database/run-reconciliation.ts
+```
+
+Before re-importing, clear the existing assignment settlement records with
+`npm run demo:reset` (recommended because it also restores the transaction
+rows), or, after taking a verified backup, run `DELETE FROM settlement_history`
+in SQLite. Do not use the normal seed script for this cleanup.
 
 The repository includes the baseline settlement report at
 `data/settlement_report.csv` and focused CSV fixtures under `data/fixtures/`.
